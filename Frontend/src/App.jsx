@@ -1,5 +1,4 @@
 import './App.css'
-import Hero from './components/Hero'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Home from './pages/Home'
