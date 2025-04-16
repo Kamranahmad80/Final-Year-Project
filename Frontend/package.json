@@ -12,6 +12,9 @@
   "dependencies": {
     "@react-oauth/google": "^0.12.1",
     "@tailwindcss/vite": "^4.0.6",
+    "axios": "^1.8.1",
+    "lightningcss": "^1.29.1",
+    "mongodb": "^6.14.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.4.0",
