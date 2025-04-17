@@ -13,49 +13,46 @@ const ContactUs = () => {
       />
 
       {/* Main Contact Section */}
-      <section className="bg-[#309689] text-white py-10 px-4">
+      <section className="bg-white text-gray-800 py-12 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Side: Info */}
           <div className="flex flex-col justify-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              You Will Grow, You Will Succeed. We Promise That
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-800">
+              We're Here To Help You Succeed
             </h2>
-            <p className="text-white/90 leading-relaxed mb-6">
-              Pellentesque felis nisi, fringilla nec risus. Suspendisse ultrices
-              in lacus tristique tincidunt. Lorem ipsum dolor sit amet,
-              consectetur adipiscing elit. Etiam gravida molestie nunc nec
-              pharetra.
+            <p className="text-gray-600 leading-relaxed mb-6">
+              Whether you have questions about our services or need assistance, our team is ready to help you on your career journey.
             </p>
-            <div className="space-y-4 text-sm">
+            <div className="space-y-4 text-sm p-6 bg-gray-50 rounded-lg border border-gray-100">
               <p>
-                <span className="font-semibold">Call for inquiry:</span> <br />
+                <span className="font-semibold text-[#309689]">Call for inquiry:</span> <br />
                 888-389-6895
               </p>
               <p>
-                <span className="font-semibold">Send us mail:</span> <br />
+                <span className="font-semibold text-[#309689]">Send us mail:</span> <br />
                 <a
-                  href="mailto:kramu@us.sbglobal.net"
-                  className="underline hover:text-white"
+                  href="mailto:info@onjob.com"
+                  className="text-blue-600 hover:underline"
                 >
-                  kramu@us.sbglobal.net
+                  info@onjob.com
                 </a>
               </p>
               <p>
-                <span className="font-semibold">Opening hours:</span> <br />
+                <span className="font-semibold text-[#309689]">Opening hours:</span> <br />
                 Mon - Fri: 10AM - 10PM
               </p>
               <p>
-                <span className="font-semibold">Address:</span> <br />
+                <span className="font-semibold text-[#309689]">Address:</span> <br />
                 19 North Road Piscataway, NJ 08854
               </p>
             </div>
           </div>
 
           {/* Right Side: Contact Form */}
-          <div className="bg-white text-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-xl font-semibold mb-4">Contact Info</h3>
+          <div className="bg-white text-gray-800 rounded-lg shadow-lg p-6 border border-gray-100">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Contact Info</h3>
             <p className="text-sm text-gray-500 mb-4">
-              Nibh dui faucibus pretium lobortis nunc.
+              Fill out the form below and we'll get back to you shortly.
             </p>
             <form className="space-y-4">
               {/* Name */}
@@ -101,53 +98,6 @@ const ContactUs = () => {
                 Send Message
               </button>
             </form>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom Info Section */}
-      <section className="bg-white text-gray-800 py-8 px-4">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Job</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Quis enim pellentesque viverra fells sit amet dapibus. Morbi in
-              congue eros. Quisque hendrerit velit sed.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Company</h3>
-            <ul className="text-sm space-y-1 text-gray-600">
-              <li>About Us</li>
-              <li>Careers</li>
-              <li>Press & Media</li>
-              <li>Contact</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Job Categories</h3>
-            <ul className="text-sm space-y-1 text-gray-600">
-              <li>Design</li>
-              <li>Development</li>
-              <li>Marketing</li>
-              <li>Finance</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Newsletter</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Subscribe to our newsletter for the latest updates.
-            </p>
-            <div className="flex">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="rounded-l p-2 w-full text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#309689]"
-              />
-              <button className="bg-[#309689] text-white px-4 py-2 rounded-r hover:bg-[#267b6c] transition">
-                Subscribe
-              </button>
-            </div>
           </div>
         </div>
       </section>

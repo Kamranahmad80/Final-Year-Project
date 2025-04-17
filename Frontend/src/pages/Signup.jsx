@@ -83,19 +83,35 @@ const Signup = () => {
     try {
       console.log('Sending signup data:', formData); // Debug log
 
+      // Set base URL if needed
+      if (!axios.defaults.baseURL) {
+        axios.defaults.baseURL = 'http://localhost:5000';
+      }
+
       const payload = new FormData();
       payload.append('name', formData.name);
       payload.append('email', formData.email);
       payload.append('password', formData.password);
       payload.append('role', formData.role);
 
+      // Log what's being added to the payload
+      console.log('Role being sent:', formData.role);
+
       if (formData.role === "employer") {
         payload.append('companyName', formData.companyName);
+        console.log('Company name being sent:', formData.companyName);
       } else {
         payload.append('experience', formData.experience);
+        console.log('Experience being sent:', formData.experience);
         if (formData.resume) {
           payload.append('resume', formData.resume);
+          console.log('Resume file name:', formData.resume.name);
         }
+      }
+
+      // Log the complete payload for debugging
+      for (let [key, value] of payload.entries()) {
+        console.log(`${key}: ${value}`);
       }
 
       const { data } = await axios.post("/api/users/register", payload, {
