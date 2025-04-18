@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import heroImg from "../assets/hero.jpg";
 import axios from "axios";
 import api from "../config/axios";
 import { FaUser, FaEnvelope, FaLock, FaBuilding, FaBriefcase, FaFileAlt, FaEye, FaEyeSlash, FaCheck, FaTimes, FaCheckCircle } from "react-icons/fa";
