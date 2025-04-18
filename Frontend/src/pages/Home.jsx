@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Hero from "../components/Hero";
 import JobCard from "../components/JobCard";
 import Footer from "../components/Footer";
-import axios from "axios";
+import api from "../config/axios";
 
 const Home = () => {
   const [jobs, setJobs] = useState([]);
@@ -18,7 +18,7 @@ const Home = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await axios.get("/api/jobs");
+        const response = await api.get("/api/jobs");
         setJobs(response.data);
       } catch (error) {
         console.error("Error fetching jobs:", error);

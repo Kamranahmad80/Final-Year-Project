@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import api from "../config/axios";
 
 // Simple Modal Component for Resume Preview
 const Modal = ({ children, onClose }) => {
@@ -30,9 +31,6 @@ const EmployeeProfile = () => {
   const resumeInputRef = useRef(null);
   const navigate = useNavigate();
 
-  // API base URL
-  const API_BASE_URL = "https://final-year-project-kohl-alpha.vercel.app";
-
   // Fetch user data from backend
   useEffect(() => {
     const fetchUserData = async () => {
@@ -42,21 +40,14 @@ const EmployeeProfile = () => {
         return;
       }
       try {
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.message || `Error: ${response.status}`);
-        }
-        const data = await response.json();
+        const { data } = await api.get("/api/users/profile");
         if (!Array.isArray(data.experiences)) {
           data.experiences = [];
         }
         setUser(data);
       } catch (err) {
         console.error("Failed to fetch user data:", err);
-        setError(err.message);
+        setError(err.message || "Failed to fetch user data");
       }
     };
     fetchUserData();
@@ -153,18 +144,7 @@ const EmployeeProfile = () => {
   // Save profile changes to backend
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found. Please log in.");
-      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(user),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Error: ${response.status}`);
-      }
-      const updatedUser = await response.json();
+      const { data: updatedUser } = await api.put("/api/users/profile", user);
       if (!Array.isArray(updatedUser.experiences)) updatedUser.experiences = [];
       setUser(updatedUser);
       localStorage.setItem("userInfo", JSON.stringify(updatedUser));
@@ -178,16 +158,7 @@ const EmployeeProfile = () => {
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete your profile? This action cannot be undone.")) {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found. Please log in.");
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Error: ${response.status}`);
-        }
+        await api.delete("/api/users/profile");
         alert("Profile deleted successfully.");
         navigate("/login");
       } catch (error) {

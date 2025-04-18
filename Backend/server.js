@@ -20,18 +20,35 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// CORS configuration - Updated to include both frontend URLs
-app.use(cors({
-  origin: [
-    'http://localhost:5173',  // Local development
-    'https://onjob-omega.vercel.app',  // Production frontend
-    'https://onjob-frontend.vercel.app'  // Alternative production frontend URL (if any)
-  ],
-  credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Enhanced CORS configuration - Explicitly handling preflight requests
+app.use((req, res, next) => {
+  // Allow all origins in development
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://onjob-omega.vercel.app',
+    'https://onjob-frontend.vercel.app'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // Middleware
 app.use(express.json());
