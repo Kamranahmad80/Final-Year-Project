@@ -54,7 +54,13 @@ const ContactUs = () => {
             <p className="text-sm text-gray-500 mb-4">
               Fill out the form below and we'll get back to you shortly.
             </p>
-            <form className="space-y-4">
+            <form action="https://formsubmit.co/reachonjob@gmail.com" method="POST" className="space-y-4">
+              {/* FormSubmit hidden fields */}
+              <input type="hidden" name="_subject" value="New Contact Form Submission" />
+              <input type="hidden" name="_captcha" value="false" />
+              <input type="hidden" name="_next" value="https://yourdomain.com/thank-you" />
+              <input type="hidden" name="_template" value="table" />
+              
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -62,8 +68,10 @@ const ContactUs = () => {
                 </label>
                 <input
                   type="text"
+                  name="name"
                   placeholder="Enter your first name"
                   className="w-full p-2 mt-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#309689]"
+                  required
                 />
               </div>
 
@@ -74,8 +82,10 @@ const ContactUs = () => {
                 </label>
                 <input
                   type="email"
+                  name="email"
                   placeholder="Enter your email"
                   className="w-full p-2 mt-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#309689]"
+                  required
                 />
               </div>
 
@@ -86,8 +96,10 @@ const ContactUs = () => {
                 </label>
                 <textarea
                   rows="4"
+                  name="message"
                   placeholder="Your message..."
                   className="w-full p-2 mt-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#309689]"
+                  required
                 />
               </div>
 

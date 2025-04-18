@@ -1,23 +1,58 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import JobCard from "../components/JobCard";
+import api from "../config/axios";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const JobDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [relatedJobs, setRelatedJobs] = useState([]);
+  const [isApplied, setIsApplied] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Function to check if the job is applied by the user
+  const checkAppliedStatus = async () => {
+    try {
+      // Try the optimized endpoint first
+      const { data } = await api.get(`/api/users/jobs/applied/${id}/check`);
+      setIsApplied(data.isApplied);
+    } catch (err) {
+      // Fall back to the original approach
+      try {
+        const appliedResponse = await api.get('/api/users/jobs/applied');
+        setIsApplied(appliedResponse.data.some(job => job._id === id));
+      } catch (fallbackErr) {
+        // Silently fail and assume not applied
+      }
+    }
+  };
 
   useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    if (token) {
+      setIsAuthenticated(true);
+      setUserRole(userInfo.role || "");
+    }
+
     const fetchJob = async () => {
       try {
-        const { data } = await axios.get(`/api/jobs/${id}`);
+        const { data } = await api.get(`/api/jobs/${id}`);
         setJob(data);
         setLoading(false);
+
+        // If user is authenticated, check job status
+        if (token && userInfo.role === "employee") {
+          checkAppliedStatus();
+        }
       } catch (err) {
         setError(err.response?.data.message || err.message);
         setLoading(false);
@@ -26,6 +61,41 @@ const JobDetail = () => {
 
     fetchJob();
   }, [id]);
+
+  const handleApplyJob = async () => {
+    if (!isAuthenticated) {
+      toast.info("Please login to apply for this job");
+      navigate("/login");
+      return;
+    }
+
+    if (userRole !== "employee") {
+      toast.error("Only employees can apply for jobs");
+      return;
+    }
+
+    setIsSubmitting(true); // Start loading state
+    toast.info("Submitting your application...");
+
+    try {
+      // Use a longer timeout for this specific request
+      const response = await api.post('/api/users/jobs/apply', 
+        { jobId: id }, 
+        { timeout: 30000 } // Increase timeout to 30 seconds
+      );
+      
+      setIsApplied(true);
+      toast.success("Application submitted successfully!");
+    } catch (error) {
+      if (error.code === 'ECONNABORTED') {
+        toast.error("Server is taking too long to respond. Please try again later.");
+      } else {
+        toast.error(error.response?.data?.message || "Failed to apply for the job");
+      }
+    } finally {
+      setIsSubmitting(false); // End loading state
+    }
+  };
 
   if (loading) {
     return <p className="text-center mt-8">Loading...</p>;
@@ -108,6 +178,7 @@ const JobDetail = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <Navbar/>
       {/* Hero Section */}
@@ -117,15 +188,25 @@ const JobDetail = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
             {Title || "Job Title"}
           </h1>
-          {/* Salary & Location */}
+          {/* Company & Location */}
           <div className="mt-2 text-gray-600 flex flex-wrap gap-4">
-            {salary && <span>Salary Range: {salary}</span>}
+            {Company && <span className="font-medium">{Company}</span>}
             {Location && <span>{Location}</span>}
           </div>
-          {/* Apply Button */}
-          <button className="mt-4 bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700">
-            Apply Now
-          </button>
+          {/* Salary */}
+          <div className="mt-2">
+            {salary && <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">{salary}</span>}
+          </div>
+          {/* Action Buttons */}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button 
+              onClick={handleApplyJob}
+              disabled={isApplied || isSubmitting}
+              className={`bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700 transition duration-200 ${(isApplied || isSubmitting) ? 'opacity-75 cursor-not-allowed' : ''}`}
+            >
+              {isApplied ? "Applied ✓" : isSubmitting ? "Submitting..." : "Apply Now"}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -161,20 +242,46 @@ const JobDetail = () => {
             </section>
           </div>
 
+          {/* Right Column: Application Hints */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded shadow p-6 sticky top-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">How to Apply</h3>
+              <p className="text-gray-600 mb-4">
+                Click the "Apply Now" button to submit your application for this position.
+              </p>
+              {isAuthenticated ? (
+                isApplied ? (
+                  <div className="text-green-600 font-medium">
+                    You have already applied for this job.
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleApplyJob}
+                    disabled={isSubmitting}
+                    className={`w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition duration-200 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                  >
+                    {isSubmitting ? "Submitting..." : "Apply Now"}
+                  </button>
+                )
+              ) : (
+                <div>
+                  <p className="text-gray-600 mb-2">
+                    You need to be logged in to apply for this job.
+                  </p>
+                  <button 
+                    onClick={() => navigate("/login")}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
+                  >
+                    Login to Apply
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </main>
 
-      {/* Related Jobs Section */}
-      <section className="bg-white py-10">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Similar Jobs</h2>
-          <p className="text-gray-600 mb-8">We don't have related jobs to show right now.</p>
-          {/* Job cards would go here if available */}
-        </div>
-      </section>
-
-      {/* Footer */}
-      <Footer/>
+      <Footer />
     </div>
   );
 };

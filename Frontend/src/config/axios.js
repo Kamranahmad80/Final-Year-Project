@@ -1,10 +1,12 @@
 import axios from 'axios';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const api = axios.create({
-    baseURL: process.env.NODE_ENV === 'development'
+    baseURL: isDevelopment
       ? 'http://localhost:5000'  // For local development
       : 'https://final-year-project-kohl-alpha.vercel.app',  // For Vercel deployment
-    timeout: 30000,
+    timeout: 15000,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -28,7 +30,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        console.log('API Error:', error.message);
+        // Only log errors in development mode
+        if (isDevelopment) {
+            if (error.code === 'ECONNABORTED') {
+                console.log('API Error: Request timed out');
+            } else {
+                console.log('API Error:', error.message);
+            }
+        }
+        
         if (error.response?.status === 401) {
             // Handle unauthorized access
             localStorage.removeItem('token');

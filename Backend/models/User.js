@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema({
       location: { type: String, default: "" }
     }
   ],
+  savedJobs: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Job' }
+  ],
+  appliedJobs: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Job' }
+  ],
+  resetPasswordToken: { type: String, default: null },
+  resetPasswordExpires: { type: Date, default: null }
 });
 
 const User = mongoose.model("User", userSchema);

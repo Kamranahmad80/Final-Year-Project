@@ -1,5 +1,5 @@
 import React from "react";
-import { FaRegBookmark, FaBriefcase, FaMapMarkerAlt, FaDollarSign } from "react-icons/fa";
+import { FaBriefcase, FaMapMarkerAlt, FaDollarSign } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const JobCard = ({ job }) => {
@@ -16,13 +16,6 @@ const JobCard = ({ job }) => {
       return [...(job.skills.required || []), ...(job.skills.preferred || [])];
     }
     return [];
-  };
-
-  // Function to handle bookmark click
-  const handleBookmark = (e) => {
-    e.preventDefault();
-    // Add bookmark functionality here
-    console.log('Bookmarked:', job.Title);
   };
 
   // Get formatted salary
@@ -81,15 +74,8 @@ const JobCard = ({ job }) => {
             </div>
           </div>
 
-          {/* Right side: Date and bookmark */}
-          <div className="flex flex-col items-end gap-2">
-            <button 
-              onClick={handleBookmark}
-              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200"
-              aria-label="Bookmark job"
-            >
-              <FaRegBookmark className="text-gray-400 hover:text-[#309689] w-4 h-4" />
-            </button>
+          {/* Right side: Date only */}
+          <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500">{postedDate}</span>
           </div>
         </div>

@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import img1 from '../assets/img1.jpg';
 import img2 from '../assets/img2.jpg';
 import img3 from '../assets/img3.jpg';
+import { Link } from 'react-router-dom';
 
 const About = () => {
   return (
@@ -51,33 +52,19 @@ const About = () => {
           </p>
         </section>
 
-        {/* Our Workplace Gallery */}
-        <section className="mb-12">
-          <h2 className="text-4xl font-extrabold text-gray-800 text-center mb-6">Our Workplace</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="overflow-hidden rounded-lg shadow-md">
-              <img src={img1} alt="Office Space" className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300" />
-            </div>
-            <div className="overflow-hidden rounded-lg shadow-md">
-              <img src={img2} alt="Team Collaboration" className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300" />
-            </div>
-            <div className="overflow-hidden rounded-lg shadow-md">
-              <img src={img3} alt="Work Environment" className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300" />
-            </div>
-          </div>
-        </section>
-
         {/* Meet the Team */}
         <section className="mb-12 text-center">
           <h2 className="text-4xl font-extrabold text-gray-800">Meet the Team</h2>
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { name: 'Kamran Ahmed', role: 'Founder & CEO', imageUrl: '/images/kamran.jpg' },
-              { name: 'Amir Bilal', role: 'CTO', imageUrl: '/images/amir.jpg' },
-              { name: 'Rahul Singh', role: 'Head of Marketing', imageUrl: '/images/rahul.jpg' },
+              { name: 'Kamran Ahmed', role: 'Founder & CEO', image: img1 },
+              { name: 'Amir Bilal', role: 'CTO', image: img2 },
+              { name: 'Rahul Singh', role: 'Head of Marketing', image: img3 },
             ].map((member, index) => (
               <div key={index} className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center border border-gray-100">
-                <img src={member.imageUrl} alt={member.name} className="w-24 h-24 mx-auto rounded-full object-cover" />
+                <div className="w-24 h-24 mx-auto overflow-hidden rounded-full">
+                  <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                </div>
                 <h3 className="mt-4 text-xl font-bold text-gray-800">{member.name}</h3>
                 <p className="mt-2 text-[#309689]">{member.role}</p>
               </div>
@@ -91,9 +78,9 @@ const About = () => {
           <p className="mt-4 text-lg max-w-2xl mx-auto">
             Whether you're a job seeker or an employer, we're here to help. Explore our platform and unlock new opportunities.
           </p>
-          <button className="mt-6 px-6 py-3 bg-white text-[#309689] font-medium rounded-lg hover:bg-gray-100 transition-colors">
+          <Link to="/signup" className="mt-6 inline-block px-6 py-3 bg-white text-[#309689] font-medium rounded-lg hover:bg-gray-100 transition-colors">
             Get Started
-          </button>
+          </Link>
         </section>
       </div>
       <Footer />

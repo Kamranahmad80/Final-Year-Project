@@ -5,6 +5,8 @@ import Jobs from './pages/Jobs';
 import JobDetail from './pages/JobDetail';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import EmployeeProfile from './pages/EmployeeProfile';
 import EmployerProfile from './pages/EmployerProfile';
 import About from './pages/About';
@@ -26,6 +28,8 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/employee-profile" element={<EmployeeProfile />} />
         <Route path="/employer-profile" element={<EmployerProfile />} />
         <Route path="/help" element={<HelpCenter />} />
