@@ -1,7 +1,9 @@
 import React from 'react';
 import Hero from '../components/Hero';
-
 import Footer from '../components/Footer';
+import img1 from '../assets/img1.jpg';
+import img2 from '../assets/img2.jpg';
+import img3 from '../assets/img3.jpg';
 
 const About = () => {
   return (
@@ -47,6 +49,22 @@ const About = () => {
           <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
             Founded in 2025, we set out to simplify job searching using AI-driven recommendations, ensuring professionals find their perfect fit.
           </p>
+        </section>
+
+        {/* Our Workplace Gallery */}
+        <section className="mb-12">
+          <h2 className="text-4xl font-extrabold text-gray-800 text-center mb-6">Our Workplace</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="overflow-hidden rounded-lg shadow-md">
+              <img src={img1} alt="Office Space" className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300" />
+            </div>
+            <div className="overflow-hidden rounded-lg shadow-md">
+              <img src={img2} alt="Team Collaboration" className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300" />
+            </div>
+            <div className="overflow-hidden rounded-lg shadow-md">
+              <img src={img3} alt="Work Environment" className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300" />
+            </div>
+          </div>
         </section>
 
         {/* Meet the Team */}

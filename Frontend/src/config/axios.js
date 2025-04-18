@@ -4,7 +4,7 @@ const api = axios.create({
     baseURL: process.env.NODE_ENV === 'development'
       ? 'http://localhost:5000'  // For local development
       : 'https://final-year-project-kohl-alpha.vercel.app',  // For Vercel deployment
-    timeout: 5000,
+    timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -28,6 +28,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        console.log('API Error:', error.message);
         if (error.response?.status === 401) {
             // Handle unauthorized access
             localStorage.removeItem('token');

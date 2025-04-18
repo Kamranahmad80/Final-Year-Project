@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
+import heroImg from "../assets/hero.jpg";
 import axios from "axios";
+import api from "../config/axios";
 import { FaUser, FaEnvelope, FaLock, FaBuilding, FaBriefcase, FaFileAlt, FaEye, FaEyeSlash, FaCheck, FaTimes, FaCheckCircle } from "react-icons/fa";
-
-// Set default base URL for axios
-axios.defaults.baseURL = 'http://localhost:5000';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -83,11 +83,6 @@ const Signup = () => {
     try {
       console.log('Sending signup data:', formData); // Debug log
 
-      // Set base URL if needed
-      if (!axios.defaults.baseURL) {
-        axios.defaults.baseURL = 'http://localhost:5000';
-      }
-
       const payload = new FormData();
       payload.append('name', formData.name);
       payload.append('email', formData.email);
@@ -114,7 +109,7 @@ const Signup = () => {
         console.log(`${key}: ${value}`);
       }
 
-      const { data } = await axios.post("/api/users/register", payload, {
+      const { data } = await api.post("/api/users/register", payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

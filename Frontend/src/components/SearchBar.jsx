@@ -70,15 +70,15 @@ const SearchBar = ({ onSearch }) => {
 
   return (
     <div className="w-full max-w-3xl mx-auto p-2 relative">
-      <div className="flex flex-col md:flex-row items-center bg-white shadow-md rounded-3xl border border-gray-300 overflow-hidden">
+      <div className="flex flex-col md:flex-row items-stretch bg-white shadow-md rounded-lg md:rounded-3xl border border-gray-300 overflow-hidden">
         {/* Search Input */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 border-b md:border-b-0 border-gray-200">
           <input
             type="text"
             placeholder="Search jobs..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-3 outline-none w-full"
+            className="px-4 py-3 outline-none w-full text-sm md:text-base"
           />
           {showSuggestions && suggestions.length > 0 && (
             <ul className="absolute z-20 bg-white border border-gray-300 w-full mt-1 rounded shadow-md max-h-60 overflow-auto">
@@ -86,7 +86,7 @@ const SearchBar = ({ onSearch }) => {
                 <li
                   key={idx}
                   onClick={() => handleSuggestionClick(sugg)}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
                 >
                   {sugg}
                 </li>
@@ -95,7 +95,7 @@ const SearchBar = ({ onSearch }) => {
           )}
         </div>
 
-        <span className="hidden md:block border-l border-gray-300 h-8"></span>
+        <span className="hidden md:block border-l border-gray-300 h-auto"></span>
 
         {/* Location Input */}
         <input
@@ -103,16 +103,16 @@ const SearchBar = ({ onSearch }) => {
           placeholder="Enter location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="flex-1 px-4 py-3 outline-none w-full md:w-auto"
+          className="flex-1 px-4 py-3 outline-none w-full md:w-auto text-sm md:text-base border-b md:border-b-0 border-gray-200"
         />
 
-        <span className="hidden md:block border-l border-gray-300 h-8"></span>
+        <span className="hidden md:block border-l border-gray-300 h-auto"></span>
 
         {/* Dynamic Categories Dropdown */}
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="flex-1 px-4 py-3 outline-none bg-white cursor-pointer w-full md:w-auto"
+          className="flex-1 px-4 py-3 outline-none bg-white cursor-pointer w-full md:w-auto text-sm md:text-base border-b md:border-b-0 border-gray-200"
         >
           <option value="">Select Category</option>
           {loadingCategories ? (
@@ -129,7 +129,7 @@ const SearchBar = ({ onSearch }) => {
         {/* Search Button */}
         <button
           onClick={handleSearch}
-          className="bg-[#309689] text-white font-medium px-6 py-3 w-full md:w-auto hover:bg-[#267b6c] cursor-pointer transition"
+          className="bg-[#309689] text-white font-medium px-4 md:px-6 py-3 w-full md:w-auto hover:bg-[#267b6c] cursor-pointer transition text-sm md:text-base"
         >
           Search
         </button>
