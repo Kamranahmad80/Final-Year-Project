@@ -30,6 +30,9 @@ const EmployeeProfile = () => {
   const resumeInputRef = useRef(null);
   const navigate = useNavigate();
 
+  // API base URL
+  const API_BASE_URL = "https://final-year-project-kohl-alpha.vercel.app";
+
   // Fetch user data from backend
   useEffect(() => {
     const fetchUserData = async () => {
@@ -39,7 +42,7 @@ const EmployeeProfile = () => {
         return;
       }
       try {
-        const response = await fetch("http://localhost:5000/api/users/profile", {
+        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
@@ -152,7 +155,7 @@ const EmployeeProfile = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found. Please log in.");
-      const response = await fetch("http://localhost:5000/api/users/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(user),
@@ -177,7 +180,7 @@ const EmployeeProfile = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found. Please log in.");
-        const response = await fetch("http://localhost:5000/api/users/profile", {
+        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });

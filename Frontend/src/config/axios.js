@@ -1,12 +1,14 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000',
+    baseURL: process.env.NODE_ENV === 'development'
+      ? 'http://localhost:5000'  // For local development
+      : 'https://your-backend.vercel.app',  // For Vercel deployment
     timeout: 5000,
     headers: {
-        'Content-Type': 'application/json'
-    }
-});
+      'Content-Type': 'application/json',
+    },
+  });
 
 // Add a request interceptor to include the token
 api.interceptors.request.use(

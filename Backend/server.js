@@ -20,10 +20,17 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// CORS configuration
+// CORS configuration - Updated to include both frontend URLs
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://onjob-omega.vercel.app'],
+  origin: [
+    'http://localhost:5173',  // Local development
+    'https://onjob-omega.vercel.app',  // Production frontend
+    'https://onjob-frontend.vercel.app'  // Alternative production frontend URL (if any)
+  ],
+  credentials: true,
   optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Middleware
