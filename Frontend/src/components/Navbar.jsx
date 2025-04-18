@@ -25,6 +25,7 @@ const Navbar = ({ isTransparent = false }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("userInfo");
     navigate("/login");
+    setSidebarOpen(false);
   };
 
   // Get navigation items based on auth status
@@ -59,17 +60,6 @@ const Navbar = ({ isTransparent = false }) => {
         </Link>
       </div>
 
-      {/* Hamburger Menu for Mobile */}
-      <button 
-        className="lg:hidden text-gray-600 hover:text-[#309689] focus:outline-none"
-        onClick={toggleSidebar}
-        aria-label="Toggle navigation menu"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-
       {/* Navigation Links - Hidden on Mobile */}
       <ul className="hidden lg:flex space-x-5">
         {getNavItems().map((item) => (
@@ -86,10 +76,10 @@ const Navbar = ({ isTransparent = false }) => {
       {/* Right Side: Profile or Auth Buttons */}
       <div className="flex items-center space-x-4">
         {userInfo ? (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Link
               to={userInfo.role === "employer" ? "/employer-profile" : "/employee-profile"}
-              className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-90"
+              className="flex items-center gap-1 transition-opacity duration-200 hover:opacity-90"
             >
               {userInfo.photo ? (
                 <img
@@ -106,14 +96,12 @@ const Navbar = ({ isTransparent = false }) => {
                 {userInfo.name}
               </span>
             </Link>
+            {/* Only show logout button on desktop */}
             <button
               onClick={handleLogout}
-              className="text-gray-600 hover:text-red-500 transition-colors duration-200"
+              className="text-gray-600 hover:text-red-500 transition-colors duration-200 hidden lg:block"
             >
               <span className="hidden sm:inline">Logout</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
             </button>
           </div>
         ) : (
@@ -136,9 +124,20 @@ const Navbar = ({ isTransparent = false }) => {
             </Link>
           </>
         )}
+
+        {/* Hamburger Menu for Mobile */}
+        <button 
+          className="lg:hidden text-gray-600 hover:text-[#309689] focus:outline-none"
+          onClick={toggleSidebar}
+          aria-label="Toggle navigation menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - Positioned on right side now */}
       <div 
         className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 lg:hidden ${
           sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -146,8 +145,8 @@ const Navbar = ({ isTransparent = false }) => {
         onClick={closeSidebar}
       >
         <div 
-          className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+            sidebarOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
           onClick={(e) => e.stopPropagation()}
         >
@@ -166,6 +165,28 @@ const Navbar = ({ isTransparent = false }) => {
                 </svg>
               </button>
             </div>
+
+            {/* Profile Info in Sidebar */}
+            {userInfo && (
+              <div className="flex items-center mb-6 pb-4 border-b border-gray-200">
+                {userInfo.photo ? (
+                  <img
+                    src={userInfo.photo}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-[#309689]"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#309689] flex items-center justify-center text-white font-semibold border-2 border-[#309689]">
+                    {getInitialAvatar(userInfo.name)}
+                  </div>
+                )}
+                <div className="ml-3">
+                  <p className="font-medium text-gray-800">{userInfo.name}</p>
+                  <p className="text-sm text-gray-500">{userInfo.email}</p>
+                </div>
+              </div>
+            )}
+            
             <ul className="space-y-4">
               {getNavItems().map((item) => (
                 <li key={item.to}>
@@ -182,7 +203,7 @@ const Navbar = ({ isTransparent = false }) => {
                   </Link>
                 </li>
               ))}
-              {!userInfo && (
+              {!userInfo ? (
                 <li>
                   <Link 
                     to="/signup" 
@@ -191,6 +212,20 @@ const Navbar = ({ isTransparent = false }) => {
                   >
                     Register
                   </Link>
+                </li>
+              ) : (
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full block py-2 px-4 mt-2 text-left rounded-md text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Logout
+                    </div>
+                  </button>
                 </li>
               )}
             </ul>
