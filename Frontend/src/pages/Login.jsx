@@ -23,7 +23,8 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data } = await axios.post("https://final-year-project-kohl-alpha.vercel.app/", { email, password });
+      const { data } = await axios.post("https://final-year-project-kohl-alpha.vercel.app/api/users/login", { email, password });
+
       setSuccessMessage("Login successful! Redirecting...");
       localStorage.setItem("token", data.token);
       localStorage.setItem("userInfo", JSON.stringify(data));
