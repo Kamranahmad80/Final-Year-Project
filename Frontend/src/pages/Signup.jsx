@@ -395,7 +395,7 @@ const Signup = () => {
                       accept=".pdf,.doc,.docx"
                       onChange={handleChange}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#309689] focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#309689] file:text-white hover:file:bg-[#267b6c]"
-                      required
+                      
                     />
                   </div>
                 </div>
