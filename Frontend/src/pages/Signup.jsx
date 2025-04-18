@@ -108,7 +108,7 @@ const Signup = () => {
         console.log(`${key}: ${value}`);
       }
 
-      const { data } = await api.post("/api/users/register", payload, {
+      const { data } = await api.post("https://final-year-project-kohl-alpha.vercel.app/", payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
