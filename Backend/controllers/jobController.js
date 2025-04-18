@@ -31,7 +31,10 @@ export const getJobs = async (req, res) => {
       jobType, 
       experience, 
       salary,
-      sortBy = 'latest' 
+      sortBy = 'latest',
+      page = 1,
+      limit = 10,
+      employer
     } = req.query;
     
     let query = {};
@@ -62,6 +65,11 @@ export const getJobs = async (req, res) => {
     // Filter by experience level
     if (experience) {
       query.experience = { $regex: experience, $options: "i" };
+    }
+
+    // Filter by employer (for employer profile)
+    if (employer) {
+      query.employer = employer;
     }
 
     // Filter by salary range
@@ -103,7 +111,17 @@ export const getJobs = async (req, res) => {
     console.log('Query:', query);
     console.log('Sort Options:', sortOptions);
 
-    const jobs = await Job.find(query).sort(sortOptions).exec();
+    // Parse pagination parameters
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const jobs = await Job.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNum)
+      .exec();
+      
     console.log("Jobs retrieved:", jobs.length);
     res.json(jobs);
   } catch (error) {

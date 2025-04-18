@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 const Navbar = ({ isTransparent = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Retrieve user info from localStorage, if available
   const userInfo = localStorage.getItem("userInfo")
@@ -35,14 +36,17 @@ const Navbar = ({ isTransparent = false }) => {
       { to: "/contact", label: "Contact Us" },
     ];
 
-    if (userInfo) {
-      // Add authenticated user specific nav items
-      if (userInfo.role === "employer") {
-        commonItems.push({ to: "/post-job", label: "Post a Job" });
-      }
-    }
-
     return commonItems;
+  };
+
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Close sidebar when a link is clicked
+  const closeSidebar = () => {
+    setSidebarOpen(false);
   };
 
   return (
@@ -55,8 +59,19 @@ const Navbar = ({ isTransparent = false }) => {
         </Link>
       </div>
 
-      {/* Navigation Links */}
-      <ul className="flex space-x-5">
+      {/* Hamburger Menu for Mobile */}
+      <button 
+        className="lg:hidden text-gray-600 hover:text-[#309689] focus:outline-none"
+        onClick={toggleSidebar}
+        aria-label="Toggle navigation menu"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Navigation Links - Hidden on Mobile */}
+      <ul className="hidden lg:flex space-x-5">
         {getNavItems().map((item) => (
           <NavItem
             key={item.to}
@@ -87,7 +102,7 @@ const Navbar = ({ isTransparent = false }) => {
                   {getInitialAvatar(userInfo.name)}
                 </div>
               )}
-              <span className={`${isTransparent ? 'text-white' : 'text-gray-700'} font-medium`}>
+              <span className={`${isTransparent ? 'text-white' : 'text-gray-700'} font-medium hidden sm:block`}>
                 {userInfo.name}
               </span>
             </Link>
@@ -95,7 +110,10 @@ const Navbar = ({ isTransparent = false }) => {
               onClick={handleLogout}
               className="text-gray-600 hover:text-red-500 transition-colors duration-200"
             >
-              Logout
+              <span className="hidden sm:inline">Logout</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
             </button>
           </div>
         ) : (
@@ -112,12 +130,72 @@ const Navbar = ({ isTransparent = false }) => {
                 isTransparent 
                   ? 'bg-white/20 text-white hover:bg-white/30' 
                   : 'bg-gray-200 text-gray-800 hover:bg-[#309689] hover:text-white'
-                } px-4 py-2 rounded-md transition-all duration-200 hover:shadow-md`}
+                } px-4 py-2 rounded-md transition-all duration-200 hover:shadow-md hidden sm:block`}
             >
               Register
             </Link>
           </>
         )}
+      </div>
+
+      {/* Mobile Sidebar */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 lg:hidden ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={closeSidebar}
+      >
+        <div 
+          className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-5">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <img src={logo} alt="Logo" className="h-8 w-8 mr-2" />
+                <span className="text-lg font-semibold text-gray-800">Onjob</span>
+              </div>
+              <button 
+                className="text-gray-600 hover:text-[#309689] focus:outline-none"
+                onClick={closeSidebar}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <ul className="space-y-4">
+              {getNavItems().map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    className={`block py-2 px-4 rounded-md transition-colors ${
+                      isActive(item.to) 
+                        ? 'bg-[#309689]/10 text-[#309689] font-semibold' 
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                    onClick={closeSidebar}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+              {!userInfo && (
+                <li>
+                  <Link 
+                    to="/signup" 
+                    className="block py-2 px-4 mt-2 text-center bg-[#309689] text-white rounded-md hover:bg-[#267b6c]"
+                    onClick={closeSidebar}
+                  >
+                    Register
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
       </div>
     </nav>
   );

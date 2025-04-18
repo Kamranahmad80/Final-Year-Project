@@ -207,24 +207,6 @@ const CareerBlog = () => {
             </button>
           </div>
         )}
-        
-        {/* Newsletter Subscription */}
-        <div className="mt-16 bg-gradient-to-r from-[#309689] to-[#267b6c] rounded-xl shadow-md p-8 text-white">
-          <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-2xl font-bold mb-2">Subscribe to Our Newsletter</h3>
-            <p className="mb-6">Get the latest career advice and job search tips delivered straight to your inbox.</p>
-            <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
-                className="px-4 py-2 rounded-md flex-grow text-gray-800 focus:outline-none focus:ring-2 focus:ring-white"
-              />
-              <button className="px-6 py-2 bg-white text-[#309689] font-medium rounded-md hover:bg-gray-100 transition-colors">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
       
       <Footer />

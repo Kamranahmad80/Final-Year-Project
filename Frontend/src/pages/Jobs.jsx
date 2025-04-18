@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaFilter, FaBriefcase, FaMapMarkerAlt, FaDollarSign, FaClock } from "react-icons/fa";
 import Hero from "../components/Hero";
@@ -9,9 +9,13 @@ import api from "../config/axios";
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef();
   const navigate = useNavigate();
 
   // Filter states
@@ -22,7 +26,9 @@ const Jobs = () => {
     jobType: searchParams.get("jobType") || "",
     experience: searchParams.get("experience") || "",
     salary: searchParams.get("salary") || "",
-    sortBy: searchParams.get("sortBy") || "latest"
+    sortBy: searchParams.get("sortBy") || "latest",
+    page: 1,
+    limit: 10
   });
 
   const jobTypes = ["Full-time", "Part-time", "Contract", "Internship", "Remote"];
@@ -42,27 +48,64 @@ const Jobs = () => {
     { value: 'salary_low', label: 'Salary: Low to High' }
   ];
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        console.log('Fetching with filters:', filters);
-        const { data } = await api.get("/api/jobs", { 
-          params: filters 
-        });
-        console.log('Fetched jobs:', data);
-        setJobs(data);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-        setError(error.response?.data?.message || "Failed to fetch jobs. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Infinite scroll implementation
+  const lastJobElementRef = useCallback(
+    (node) => {
+      if (loading || loadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreJobs();
+        }
+      });
+      
+      if (node) observer.current.observe(node);
+    },
+    [loading, loadingMore, hasMore]
+  );
 
-    fetchJobs();
-  }, [filters]);
+  const loadMoreJobs = () => {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    
+    fetchJobs(nextPage, true);
+  };
+
+  const fetchJobs = async (pageNum = 1, append = false) => {
+    try {
+      setError(null);
+      if (pageNum === 1) {
+        setLoading(true);
+      }
+      
+      const { data } = await api.get("/api/jobs", { 
+        params: { ...filters, page: pageNum, limit: 10 } 
+      });
+      
+      if (append) {
+        setJobs(prev => [...prev, ...data]);
+      } else {
+        setJobs(data);
+      }
+      
+      setHasMore(data.length === 10);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      setError(error.response?.data?.message || "Failed to fetch jobs. Please try again later.");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    fetchJobs(1, false);
+  }, [filters.search, filters.location, filters.category, filters.jobType, filters.experience, filters.salary, filters.sortBy]);
 
   const handleFilterChange = (key, value) => {
     console.log('Changing filter:', key, value);
@@ -75,7 +118,8 @@ const Jobs = () => {
       
       // Update URL params
       setSearchParams(new URLSearchParams(
-        Object.entries(newFilters).filter(([_, v]) => v)
+        Object.entries(newFilters)
+          .filter(([key, v]) => v && key !== 'page' && key !== 'limit')
       ));
       
       return newFilters;
@@ -90,7 +134,9 @@ const Jobs = () => {
       jobType: "",
       experience: "",
       salary: "",
-      sortBy: "latest"
+      sortBy: "latest",
+      page: 1,
+      limit: 10
     });
     setSearchParams({});
   };
@@ -259,15 +305,27 @@ const Jobs = () => {
                   <p className="mt-2 text-gray-600">Loading jobs...</p>
                 </div>
               ) : jobs.length > 0 ? (
-                jobs.map((job) => (
-                  <JobCard 
-                    key={job._id} 
-                    job={{
-                      ...job,
-                      salary: formatSalary(job.salary)
-                    }} 
-                  />
-                ))
+                <>
+                  {jobs.map((job, index) => (
+                    <div 
+                      key={job._id} 
+                      ref={index === jobs.length - 1 ? lastJobElementRef : null}
+                    >
+                      <JobCard 
+                        job={{
+                          ...job,
+                          salary: formatSalary(job.salary)
+                        }} 
+                      />
+                    </div>
+                  ))}
+                  {loadingMore && (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-4 border-[#309689] border-t-transparent"></div>
+                      <p className="mt-2 text-gray-600">Loading more jobs...</p>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-600">No jobs found matching your criteria.</p>
