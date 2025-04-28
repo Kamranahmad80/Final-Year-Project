@@ -1,18 +1,5 @@
 import Job from "../models/Job.js";
 
-export const getJobSuggestions = async (req, res) => {
-  try {
-    const { query } = req.query;
-    if (!query) return res.json([]);
-    // Return distinct job titles that match the query
-    const suggestions = await Job.find({
-      Title: { $regex: query, $options: "i" }
-    }).distinct("Title");
-    res.json(suggestions);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 export const getJobCategories = async (req, res) => {
   try {
     const categories = await Job.distinct("Category"); // Fetch unique categories
@@ -75,7 +62,7 @@ export const getJobs = async (req, res) => {
     // Filter by salary range
     if (salary) {
       // Parse salary range (e.g., "₹0-3 LPA" -> { min: 0, max: 3 })
-      const range = salary.match(/₹(\d+)-(\d+)/);
+      const range = salary.match(/(?:₹)?(\d+)-(\d+)/); // Allow optional "₹" symbol
       if (range) {
         const [, min, max] = range;
         query.salary = {
@@ -84,7 +71,11 @@ export const getJobs = async (req, res) => {
         };
       } else if (salary.includes('+')) {
         // Handle "15+ LPA" case
-        const min = parseInt(salary.match(/₹(\d+)\+/)[1]);
+        const minMatch = salary.match(/(?:₹)?(\d+)\+/);
+        if (minMatch) {
+          const min = parseInt(minMatch[1]);
+          query.salary = { $gte: min };
+        }
         query.salary = { $gte: min };
       }
     }
@@ -104,11 +95,15 @@ export const getJobs = async (req, res) => {
       case 'salary_low':
         sortOptions = { salary: 1 };
         break;
-      default:
+    // Log the query using a proper logging mechanism
+    logger.info('Query:', query);
         sortOptions = { postedAt: -1 };
     }
 
-    console.log('Query:', query);
+    // Use a proper logging mechanism for production
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Sort Options:', sortOptions);
+    }
     console.log('Sort Options:', sortOptions);
 
     // Parse pagination parameters
@@ -193,6 +188,10 @@ export const deleteJob = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
     if (job) {
+      // Check if the user is authorized to delete the job
+      if (job.employer.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: "Unauthorized to delete this job" });
+      }
       await job.remove();
       res.json({ message: "Job removed" });
     } else {

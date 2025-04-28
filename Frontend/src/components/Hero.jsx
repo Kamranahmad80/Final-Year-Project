@@ -6,17 +6,15 @@ import heroBg from '../assets/hero-bg.avif';
 const Hero = ({ showSearchBar = false, title, subtitle, onSearch }) => {
   return (
     <section 
-      className="relative min-h-[80vh] bg-[#1a1a1a] overflow-hidden" 
-    >
-      {/* Background image with strong blur effect */}
+      className="relative min-h-[80vh] bg-[#1a1a1a] overflow-hidden" >
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-md"
         style={{ 
           backgroundImage: `url(${heroBg})`,
           transform: 'scale(1.1)' // Prevent blur edges from showing
-        }}
-      ></div>
-      
+        }}>
+          
+        </div>
       {/* Gradient overlay for better readability */}
       <div 
         className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60 z-10"

@@ -31,19 +31,19 @@ const ContactUs = () => {
               <p>
                 <span className="font-semibold text-[#309689]">Send us mail:</span> <br />
                 <a
-                  href="mailto:info@onjob.com"
+                  href="mailto:reachonjob@gmail.com"
                   className="text-blue-600 hover:underline"
                 >
-                  info@onjob.com
+                  reachonjob@gmail.com
                 </a>
               </p>
               <p>
                 <span className="font-semibold text-[#309689]">Opening hours:</span> <br />
-                Mon - Fri: 10AM - 10PM
+                Mon - Fri: 8AM - 10PM
               </p>
               <p>
                 <span className="font-semibold text-[#309689]">Address:</span> <br />
-                19 North Road Piscataway, NJ 08854
+                Mingora , swat 198200
               </p>
             </div>
           </div>
