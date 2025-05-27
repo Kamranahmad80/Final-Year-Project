@@ -30,6 +30,7 @@ const EmployeeProfile = () => {
   const [savedJobs, setSavedJobs] = useState([]);
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const fileInputRef = useRef(null);
   const resumeInputRef = useRef(null);
   const navigate = useNavigate();
@@ -118,10 +119,46 @@ const EmployeeProfile = () => {
     const file = e.target.files[0];
     if (file) {
       try {
-        const base64Resume = await toBase64(file);
-        setUser((prevUser) => ({ ...prevUser, resume: base64Resume }));
+        // Show loading indicator
+        setError(""); // Clear any previous errors
+        setUploadingResume(true);
+        
+        // Create a FormData object to send the file properly
+        const formData = new FormData();
+        formData.append('resume', file);
+        
+        console.log("Uploading resume file:", file.name);
+        
+        // Upload the resume directly
+        const response = await api.post('/api/users/upload/resume', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        console.log("Resume upload response:", response.data);
+        
+        // Update the user state with the resume path returned from the server
+        if (response.data && response.data.url) {
+          // Update user state
+          setUser((prevUser) => ({ ...prevUser, resume: response.data.url }));
+          
+          // Update localStorage with the userInfo returned from the server
+          if (response.data.userInfo) {
+            localStorage.setItem("userInfo", JSON.stringify(response.data.userInfo));
+          }
+          
+          // Show success message without an alert
+          setError("");
+          // Request recommendations after successful upload
+          fetchRecommendations();
+        }
       } catch (error) {
-        console.error("Error converting resume to base64:", error);
+        console.error("Error uploading resume:", error);
+        setError("Failed to upload resume: " + (error.response?.data?.message || error.message));
+      } finally {
+        // Always turn off loading indicator when done
+        setUploadingResume(false);
       }
     }
   };
@@ -556,12 +593,22 @@ const EmployeeProfile = () => {
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
                       <button
                         onClick={handleResumeUpload}
-                        disabled={!isEditing}
-                        className={`bg-[#309689] hover:bg-[#267b6c] text-white px-3 sm:px-4 py-1.5 sm:py-2 text-sm rounded-md ${
-                          !isEditing ? "opacity-50 cursor-not-allowed" : ""
+                        disabled={!isEditing || uploadingResume}
+                        className={`bg-[#309689] hover:bg-[#267b6c] text-white px-3 sm:px-4 py-1.5 sm:py-2 text-sm rounded-md flex items-center justify-center ${
+                          !isEditing || uploadingResume ? "opacity-70 cursor-not-allowed" : ""
                         }`}
                       >
-                        {user.resume ? "Update Resume" : "Upload Resume"}
+                        {uploadingResume ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Uploading...
+                          </>
+                        ) : (
+                          user.resume ? "Update Resume" : "Upload Resume"
+                        )}
                       </button>
                       <input type="file" accept=".pdf,.doc,.docx" ref={resumeInputRef} style={{ display: "none" }} onChange={handleResumeChange} />
                       {user.resume && (

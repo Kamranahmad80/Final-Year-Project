@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from './pages/Home';
 import Jobs from './pages/Jobs';
 import JobDetail from './pages/JobDetail';
+import Recommendations from './pages/Recommendations';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
@@ -19,11 +20,11 @@ import CareerBlog from './pages/CareerBlog';
 function App() {
   return (
     <>
-      {/* You may include your Header or Navbar here */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route path="/recommendations" element={<Recommendations />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />

@@ -17,7 +17,7 @@ export const registerUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password, // Remember to hash in production
+      password, 
       role: role || "employee",
       // For employees, store resume; for employers, this field remains undefined
       resume: role === "employee" ? resume : undefined,

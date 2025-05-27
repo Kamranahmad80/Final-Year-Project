@@ -33,6 +33,8 @@ const Navbar = ({ isTransparent = false }) => {
     const commonItems = [
       { to: "/", label: "Home" },
       { to: "/jobs", label: "Jobs" },
+      // Only show Recommendations if user is logged in
+      ...(userInfo ? [{ to: "/recommendations", label: "For You" }] : []),
       { to: "/about", label: "About Us" },
       { to: "/contact", label: "Contact Us" },
     ];

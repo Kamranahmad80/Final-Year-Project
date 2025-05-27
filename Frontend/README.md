@@ -8,27 +8,27 @@
 <p>Before you begin, ensure you have the following installed:</p>
 <ul>
   <li><a href="https://nodejs.org/">Node.js</a> (version 14 or higher)</li>
-  <li><a href="https://www.npmjs.com/">npm</a> (or <a href="https://pnpm.io/">pnpm</a> if preferred)</li>
+  <li><a href="https://www.npmjs.com/">npm</a> </li>
 </ul>
 
 <h3>Installation</h3>
 <pre><code>
 1. Clone this repository:
-   git clone https://github.com/kamranahmad80/Onjob.git
+   git clone https://github.com/Kamranahmad80/Final-Year-Project.git
 
 2. Navigate into the project directory:
-   cd Onjob
+   cd final-year-project
 
 3. Install the dependencies:
    - If you are using <strong>npm</strong>:
      npm install
-   - If you are using <strong>pnpm</strong>:
-     pnpm install
+  
 </code></pre>
 <h3>Running the App</h3>
 <p>To run the application locally:</p>
 <pre><code>
 1. Start the development server:
+   cd frontend
    npm start
 
 2. Open your browser and go to <a href="http://localhost:3000">http://localhost:3000</a>.
@@ -45,11 +45,3 @@ src/
   └── styles/            # Custom styles and Tailwind configuration
 </code></pre>
 
-<h2>Contributing</h2>
-<ol>
-  <li>Fork the repository.</li>
-  <li>Create a new branch for your feature (<code>git checkout -b feature-name</code>).</li>
-  <li>Commit your changes (<code>git commit -am 'Add feature'</code>).</li>
-  <li>Push to your branch (<code>git push origin feature-name</code>).</li>
-  <li>Open a pull request.</li>
-</ol>

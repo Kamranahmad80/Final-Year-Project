@@ -74,8 +74,21 @@ const JobCard = ({ job }) => {
             </div>
           </div>
 
-          {/* Right side: Date only */}
+          {/* Right side: Match score and date */}
           <div className="flex flex-col items-end">
+            {job.matchScore !== undefined && (
+              <div className="flex items-center mb-1">
+                <div className="h-2 w-16 bg-gray-200 rounded-full mr-2 overflow-hidden">
+                  <div 
+                    className="h-full rounded-full bg-green-500" 
+                    style={{ width: `${Math.round(job.matchScore * 100)}%` }}
+                  ></div>
+                </div>
+                <span className="text-xs font-medium text-gray-700">
+                  {Math.round(job.matchScore * 100)}% Match
+                </span>
+              </div>
+            )}
             <span className="text-xs text-gray-500">{postedDate}</span>
           </div>
         </div>

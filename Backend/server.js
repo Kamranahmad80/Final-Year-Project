@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
+import recommendationRoutes from "./routes/recommendationRoutes.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 
 // Load environment variables
@@ -62,6 +63,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 // Add a health check route
 app.get('/health', (req, res) => {
