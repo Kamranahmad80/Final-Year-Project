@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../config/axios";
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaCheckCircle } from "react-icons/fa";
 
 const Login = () => {
@@ -23,7 +23,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data } = await axios.post("https://final-year-project-kohl-alpha.vercel.app/api/users/login", { email, password });
+      const { data } = await api.post("/api/users/login", { email, password });
 
       setSuccessMessage("Login successful! Redirecting...");
       localStorage.setItem("token", data.token);
