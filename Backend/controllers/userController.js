@@ -1,26 +1,29 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import crypto from "crypto";
+import fs from 'fs';
 
 export const registerUser = async (req, res) => {
   // Extract fields; resume file is handled by Multer (available as req.file)
   const { name, email, password, role } = req.body;
   
-  // Handle file uploads differently based on environment
+  // Prepare resume file data
   let resume = null;
-  const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  let resumeFile = null;
   
+  // Handle resume file if uploaded
   if (req.file) {
-    if (isVercel) {
-      // On Vercel, files are in memory - we can store a reference to the filename
-      // In a real app, you'd upload this to cloud storage like S3, Cloudinary, etc.
-      // For now, we'll just store the filename for demonstration
-      resume = `memory-${Date.now()}-${req.file.originalname}`;
-      console.log(`File upload in memory: ${resume}`);
-    } else {
-      // Local development - use file path
-      resume = req.file.path;
-    }
+    // Store the filename as a reference
+    resume = req.file.originalname;
+    
+    // Store file data directly in MongoDB (works in both local and Vercel environments)
+    resumeFile = {
+      data: req.file.buffer || (req.file.path ? fs.readFileSync(req.file.path) : null),
+      contentType: req.file.mimetype,
+      name: req.file.originalname
+    };
+    
+    console.log(`Resume file processed: ${resume}`);
   }
 
   try {
@@ -36,6 +39,8 @@ export const registerUser = async (req, res) => {
       role: role || "employee",
       // For employees, store resume; for employers, this field remains undefined
       resume: role === "employee" ? resume : undefined,
+      // Store the resume file data if available
+      resumeFile: role === "employee" && resumeFile ? resumeFile : undefined,
     });
 
     if (user) {
@@ -96,6 +101,7 @@ export const updateUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (user) {
+      // Update basic profile fields
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.nick_name = req.body.nick_name || user.nick_name;
@@ -103,11 +109,31 @@ export const updateUserProfile = async (req, res) => {
       user.country = req.body.country || user.country;
       user.language = req.body.language || user.language;
       user.experience = req.body.experience || user.experience;
-      user.resume = req.body.resume || user.resume;
       user.photo = req.body.photo || user.photo;
+
+      // Handle resume file if uploaded
+      if (req.file) {
+        // Update resume filename
+        user.resume = req.file.originalname;
+        
+        // Store file data directly in MongoDB
+        user.resumeFile = {
+          data: req.file.buffer || (req.file.path ? fs.readFileSync(req.file.path) : null),
+          contentType: req.file.mimetype,
+          name: req.file.originalname
+        };
+        
+        console.log(`Resume file updated: ${user.resume}`);
+      } else if (req.body.resume) {
+        // If only resume name is provided without a file
+        user.resume = req.body.resume;
+      }
+
+      // Update password if provided
       if (req.body.password) {
         user.password = req.body.password;
       }
+
       const updatedUser = await user.save();
       res.json({
         _id: updatedUser._id,

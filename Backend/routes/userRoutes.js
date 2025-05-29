@@ -24,7 +24,7 @@ const router = express.Router();
 router.post("/register", upload.single("resume"), registerUser);
 router.post("/login", loginUser);
 router.get("/profile", protect, getUserProfile);
-router.put("/profile", protect, updateUserProfile);
+router.put("/profile", protect, upload.single("resume"), updateUserProfile);
 router.delete("/profile", protect, deleteUserProfile);
 
 // Job application routes
@@ -41,6 +41,26 @@ router.get("/jobs/applied/:jobId/check", protect, checkJobApplied);
 // Password reset routes
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+
+// Resume file retrieval endpoint
+router.get("/resume/:userId", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user || !user.resumeFile || !user.resumeFile.data) {
+      return res.status(404).json({ message: "Resume not found" });
+    }
+    
+    // Set the appropriate content type
+    res.set('Content-Type', user.resumeFile.contentType);
+    res.set('Content-Disposition', `inline; filename="${user.resumeFile.name}"`);
+    
+    // Send the file data
+    return res.send(user.resumeFile.data);
+  } catch (error) {
+    console.error("Error retrieving resume:", error);
+    return res.status(500).json({ message: "Server error retrieving resume" });
+  }
+});
 
 // Upload company logo
 router.post("/upload/logo", protect, upload.single("logo"), (req, res) => {

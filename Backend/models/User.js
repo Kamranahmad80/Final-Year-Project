@@ -11,6 +11,11 @@ const userSchema = new mongoose.Schema({
   language: { type: String, default: "" },
   photo: { type: String, default: "" },
   resume: { type: String, default: "" },
+  resumeFile: {
+    data: Buffer,
+    contentType: String,
+    name: String
+  },
   createdAt: { type: Date, default: Date.now },
   experiences: [
     {
