@@ -737,7 +737,13 @@ const EmployeeProfile = () => {
         <Modal onClose={() => setShowResumeModal(false)}>
           <div className="p-4">
             <h2 className="text-xl font-bold mb-4">Resume</h2>
-            <iframe src={user.resume} width="100%" height="500px" title="Resume Preview" className="border"></iframe>
+            <iframe 
+              src={`${api.defaults.baseURL}/api/users/resume/${user._id}`} 
+              width="100%" 
+              height="500px" 
+              title="Resume Preview" 
+              className="border"
+            ></iframe>
           </div>
         </Modal>
       )}
