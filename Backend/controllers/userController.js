@@ -5,8 +5,23 @@ import crypto from "crypto";
 export const registerUser = async (req, res) => {
   // Extract fields; resume file is handled by Multer (available as req.file)
   const { name, email, password, role } = req.body;
-  // For employees, if resume is uploaded, store its path
-  const resume = req.file ? req.file.path : null;
+  
+  // Handle file uploads differently based on environment
+  let resume = null;
+  const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  
+  if (req.file) {
+    if (isVercel) {
+      // On Vercel, files are in memory - we can store a reference to the filename
+      // In a real app, you'd upload this to cloud storage like S3, Cloudinary, etc.
+      // For now, we'll just store the filename for demonstration
+      resume = `memory-${Date.now()}-${req.file.originalname}`;
+      console.log(`File upload in memory: ${resume}`);
+    } else {
+      // Local development - use file path
+      resume = req.file.path;
+    }
+  }
 
   try {
     const userExists = await User.findOne({ email });

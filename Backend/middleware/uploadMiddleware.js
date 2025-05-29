@@ -2,29 +2,44 @@ import multer from "multer";
 import path from "path";
 import fs from 'fs';
 
-// Ensure upload directories exist
-const ensureDirectoryExists = (directory) => {
-  if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory, { recursive: true });
-    console.log(`Created directory: ${directory}`);
-  }
-};
+// Check if running on Vercel (production) or locally
+const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
 
-// Create required directories
-ensureDirectoryExists('uploads/resumes');
-ensureDirectoryExists('uploads/logos');
+// Different storage strategies based on environment
+let storage;
 
-// Set up storage engine
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    const uploadDir = file.fieldname === 'logo' ? 'uploads/logos/' : 'uploads/resumes/';
-    cb(null, uploadDir);
-  },
-  filename(req, file, cb) {
-    // Use original name plus timestamp for uniqueness
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+if (isVercel) {
+  // For Vercel: Use memory storage instead of disk storage
+  console.log('Running on Vercel: Using memory storage for file uploads');
+  storage = multer.memoryStorage();
+} else {
+  // For local development: Use disk storage
+  console.log('Running locally: Using disk storage for file uploads');
+  
+  // Ensure upload directories exist (only in local development)
+  const ensureDirectoryExists = (directory) => {
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory, { recursive: true });
+      console.log(`Created directory: ${directory}`);
+    }
+  };
+
+  // Create required directories
+  ensureDirectoryExists('uploads/resumes');
+  ensureDirectoryExists('uploads/logos');
+  
+  // Set up disk storage engine
+  storage = multer.diskStorage({
+    destination(req, file, cb) {
+      const uploadDir = file.fieldname === 'logo' ? 'uploads/logos/' : 'uploads/resumes/';
+      cb(null, uploadDir);
+    },
+    filename(req, file, cb) {
+      // Use original name plus timestamp for uniqueness
+      cb(null, `${Date.now()}-${file.originalname}`);
+    },
+  });
+}
 
 // File type filter for resumes
 const resumeFileFilter = (req, file, cb) => {
