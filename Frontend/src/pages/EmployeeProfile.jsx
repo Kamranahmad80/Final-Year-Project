@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../config/axios";
@@ -148,10 +149,9 @@ const EmployeeProfile = () => {
             localStorage.setItem("userInfo", JSON.stringify(response.data.userInfo));
           }
           
-          // Show success message without an alert
+          // Show success message with toast notification
           setError("");
-          // Request recommendations after successful upload
-          fetchRecommendations();
+          toast.success("Resume uploaded successfully");
         }
       } catch (error) {
         console.error("Error uploading resume:", error);
