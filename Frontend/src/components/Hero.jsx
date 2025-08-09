@@ -1,4 +1,3 @@
-import React from 'react';
 import Navbar from './Navbar';
 import SearchBar from './SearchBar';
 import heroBg from '../assets/hero-bg.avif';
@@ -43,10 +42,6 @@ const Hero = ({ showSearchBar = false, title, subtitle, onSearch }) => {
             <div className="bg-black/30 backdrop-blur-md p-4 rounded-xl border border-white/10">
               <div className="text-3xl font-bold">1000+</div>
               <div className="text-white/90 text-sm md:text-base">Active Jobs</div>
-            </div>
-            <div className="bg-black/30 backdrop-blur-md p-4 rounded-xl border border-white/10">
-              <div className="text-3xl font-bold">500+</div>
-              <div className="text-white/90 text-sm md:text-base">Companies</div>
             </div>
             <div className="col-span-2 md:col-span-1 bg-black/30 backdrop-blur-md p-4 rounded-xl border border-white/10">
               <div className="text-3xl font-bold">50k+</div>

@@ -3,7 +3,6 @@ import Hero from '../components/Hero';
 import Footer from '../components/Footer';
 import img1 from '../assets/img1.jpg';
 import img2 from '../assets/img2.jpg';
-import img3 from '../assets/img3.jpg';
 import { Link } from 'react-router-dom';
 
 const About = () => {
@@ -55,15 +54,19 @@ const About = () => {
         {/* Meet the Team */}
         <section className="mb-12 text-center">
           <h2 className="text-4xl font-extrabold text-gray-800">Meet the Team</h2>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {[
-              { name: 'Kamran Ahmed', role: 'Founder & CEO', image: img1 },
-              { name: 'Amir Bilal', role: 'CTO', image: img2 },
-              { name: 'Rahul Singh', role: 'Head of Marketing', image: img3 },
+              { name: 'Kamran Ahmad', role: 'Frontend Developer', image: img1 },
+              { name: 'Amir Bilal', role: 'AI Developer', image: img2 },
             ].map((member, index) => (
-              <div key={index} className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center border border-gray-100">
-                <div className="w-24 h-24 mx-auto overflow-hidden rounded-full">
-                  <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+              <div key={index} className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center border border-gray-100 flex flex-col items-center">
+                <div className="w-32 h-32 overflow-hidden rounded-full border-2 border-gray-200">
+                  <img 
+                    src={member.image} 
+                    alt={member.name} 
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                    style={{ objectPosition: 'top' }}
+                  />
                 </div>
                 <h3 className="mt-4 text-xl font-bold text-gray-800">{member.name}</h3>
                 <p className="mt-2 text-[#309689]">{member.role}</p>

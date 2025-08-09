@@ -1,3 +1,0 @@
-@echo off
-echo Starting Backend API Service...
-npm start

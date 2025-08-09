@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import api from "../config/axios";
 import { FaLock, FaEye, FaEyeSlash, FaCheckCircle } from "react-icons/fa";
 
 const ResetPassword = () => {

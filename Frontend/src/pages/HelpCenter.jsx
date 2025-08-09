@@ -18,12 +18,12 @@ const HelpCenter = () => {
         {
           id: 'gs-1',
           question: 'How do I create an account?',
-          answer: 'To create an account, click on the "Register" button in the top right corner of the homepage. Fill in your personal details, select whether you are an employee or employer, and submit the form. You will receive an email confirmation to verify your account.'
+          answer: 'To create an account, click on the "Register" button in the top right corner of the homepage. Fill in your personal details, select whether you are an employee or employer, and submit the form.'
         },
         {
           id: 'gs-2',
           question: 'How do I search for jobs?',
-          answer: 'Use the search bar on the homepage to look for jobs by title, skill, or company. You can also filter results by location, category, or job type using the advanced search options. Our AI will recommend jobs based on your profile information and past searches.'
+          answer: 'Use the search bar on the homepage to look for jobs by title, skill, or company. You can also filter results by location, category, or job type using the advanced search options. Our AI will recommend jobs based on your CV.'
         },
         {
           id: 'gs-3',

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../config/axios";
 import { FaEnvelope, FaCheckCircle, FaArrowLeft } from "react-icons/fa";
 
 const ForgotPassword = () => {

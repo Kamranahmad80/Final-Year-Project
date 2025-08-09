@@ -39,7 +39,7 @@ const ContactUs = () => {
               </p>
               <p>
                 <span className="font-semibold text-[#309689]">Opening hours:</span> <br />
-                Mon - Fri: 8AM - 10PM
+                24-7
               </p>
               <p>
                 <span className="font-semibold text-[#309689]">Address:</span> <br />

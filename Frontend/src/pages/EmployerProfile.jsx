@@ -1,514 +1,823 @@
-import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import JobCard from "../components/JobCard";
+
+import React, { useState, useEffect } from 'react';
+import { FiBriefcase, FiMail, FiPhone, FiMapPin, FiUsers, FiGlobe, FiEdit2, FiSave, FiPlus, FiTrash2, FiUpload } from 'react-icons/fi';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const EmployerProfile = () => {
-  const [profile, setProfile] = useState(null);
-  const [error, setError] = useState("");
-  const [isEditingJob, setIsEditingJob] = useState(false);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [jobForm, setJobForm] = useState({
-    title: "",
-    location: "",
-    category: "",
-    jobType: "",
-    salary: "",
-    description: "",
-    companyLogo: null
+  const [profile, setProfile] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    companyDetails: {
+      companyName: '',
+      website: '',
+      industry: '',
+      companySize: '',
+      foundedYear: '',
+      about: '',
+      logo: '',
+      coverPhoto: ''
+    },
+    jobPostings: [],
+    teamMembers: []
   });
-  const [profileForm, setProfileForm] = useState({
-    name: "",
-    email: "",
-    companyName: "",
-    companyDescription: "",
-    website: "",
-    industry: "",
-    location: ""
+  const [isEditing, setIsEditing] = useState(false);
+  const [newJob, setNewJob] = useState({
+    title: '',
+    type: 'Full-time',
+    location: '',
+    salary: '',
+    description: '',
+    requirements: [],
+    responsibilities: []
   });
-  const [postedJobs, setPostedJobs] = useState([]);
-  const fileInputRef = useRef(null);
+  const [newTeamMember, setNewTeamMember] = useState({
+    name: '',
+    position: '',
+    email: '',
+    phone: ''
+  });
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [showTeamForm, setShowTeamForm] = useState(false);
+  const [newRequirement, setNewRequirement] = useState('');
+  const [newResponsibility, setNewResponsibility] = useState('');
   const navigate = useNavigate();
 
-  // Fetch employer profile data and posted jobs
+  // Job types for the dropdown
+  const jobTypes = [
+    'Full-time',
+    'Part-time',
+    'Contract',
+    'Temporary',
+    'Internship',
+    'Freelance'
+  ];
+
+  // Company sizes for the dropdown
+  const companySizes = [
+    '1-10 employees',
+    '11-50 employees',
+    '51-200 employees',
+    '201-500 employees',
+    '501-1000 employees',
+    '1001-5000 employees',
+    '5001+ employees'
+  ];
+
   useEffect(() => {
-    const fetchProfileAndJobs = async () => {
+    // Fetch user profile data from API
+    const fetchProfile = async () => {
       try {
-        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-        if (!userInfo || !userInfo.token) {
-          setError("User not authenticated.");
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
           return;
         }
-        const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        // Fetch user profile
-        const profileResponse = await axios.get("/api/users/profile", config);
-        setProfile(profileResponse.data);
-        setProfileForm({
-          name: profileResponse.data.name || "",
-          email: profileResponse.data.email || "",
-          companyName: profileResponse.data.companyName || "",
-          companyDescription: profileResponse.data.companyDescription || "",
-          website: profileResponse.data.website || "",
-          industry: profileResponse.data.industry || "",
-          location: profileResponse.data.location || ""
+        
+        const response = await axios.get('http://localhost:5000/api/users/me', {
+          headers: { 
+            'x-auth-token': token,
+            'Content-Type': 'application/json'
+          }
         });
         
-        // Fetch jobs posted by this employer
-        const jobsResponse = await axios.get("/api/jobs", { 
-          params: { employer: profileResponse.data._id },
-          headers: { Authorization: `Bearer ${userInfo.token}` }
+        // Set the profile with the user data
+        const userData = response.data;
+        setProfile({
+          ...userData,
+          companyDetails: userData.companyDetails || {}
         });
-        setPostedJobs(jobsResponse.data);
-      } catch (err) {
-        setError(err.response?.data.message || err.message);
+      } catch (error) {
+        console.error('Error fetching employer profile:', error);
       }
     };
 
-    fetchProfileAndJobs();
-  }, []);
+    fetchProfile();
+  }, [navigate]);
 
-  // Handlers for job form changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Check if the field is in companyDetails
+    if (name in (profile.companyDetails || {})) {
+      setProfile(prev => ({
+        ...prev,
+        companyDetails: {
+          ...prev.companyDetails,
+          [name]: value
+        }
+      }));
+    } else {
+      setProfile(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
   const handleJobChange = (e) => {
     const { name, value } = e.target;
-    setJobForm((prev) => ({ ...prev, [name]: value }));
+    setNewJob(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  // Handle file upload for company logo
-  const handleLogoChange = (e) => {
-    setJobForm(prev => ({ ...prev, companyLogo: e.target.files[0] }));
-  };
-
-  // Handle profile form changes
-  const handleProfileChange = (e) => {
+  const handleTeamMemberChange = (e) => {
     const { name, value } = e.target;
-    setProfileForm((prev) => ({ ...prev, [name]: value }));
+    setNewTeamMember(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  // Handle profile update
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      };
-      
-      const { data } = await axios.put("/api/users/profile", profileForm, config);
-      setProfile(data);
-      setIsEditingProfile(false);
-      
-      // Update localStorage user info with new profile data
-      const updatedUserInfo = { ...userInfo, name: data.name };
-      localStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
-      
-    } catch (err) {
-      console.error("Error updating profile:", err.response?.data.message || err.message);
+  const addJobPosting = () => {
+    const jobToAdd = {
+      ...newJob,
+      id: Date.now(),
+      postedDate: new Date(),
+      status: 'Active'
+    };
+    
+    setProfile(prev => ({
+      ...prev,
+      jobPostings: [...(prev.jobPostings || []), jobToAdd]
+    }));
+    
+    // Reset form
+    setNewJob({
+      title: '',
+      type: 'Full-time',
+      location: '',
+      salary: '',
+      description: '',
+      requirements: [],
+      responsibilities: []
+    });
+    setShowJobForm(false);
+  };
+
+  const addTeamMember = () => {
+    setProfile(prev => ({
+      ...prev,
+      teamMembers: [...(prev.teamMembers || []), { ...newTeamMember, id: Date.now() }]
+    }));
+    
+    // Reset form
+    setNewTeamMember({
+      name: '',
+      position: '',
+      email: '',
+      phone: ''
+    });
+    setShowTeamForm(false);
+  };
+
+  const addRequirement = () => {
+    if (newRequirement.trim()) {
+      setNewJob(prev => ({
+        ...prev,
+        requirements: [...prev.requirements, newRequirement.trim()]
+      }));
+      setNewRequirement('');
     }
   };
 
-  // Handle new job submission
-  const handleJobSubmit = async (e) => {
-    e.preventDefault();
+  const addResponsibility = () => {
+    if (newResponsibility.trim()) {
+      setNewJob(prev => ({
+        ...prev,
+        responsibilities: [...prev.responsibilities, newResponsibility.trim()]
+      }));
+      setNewResponsibility('');
+    }
+  };
+
+  const removeRequirement = (index) => {
+    const updatedRequirements = [...newJob.requirements];
+    updatedRequirements.splice(index, 1);
+    setNewJob(prev => ({
+      ...prev,
+      requirements: updatedRequirements
+    }));
+  };
+
+  const removeResponsibility = (index) => {
+    const updatedResponsibilities = [...newJob.responsibilities];
+    updatedResponsibilities.splice(index, 1);
+    setNewJob(prev => ({
+      ...prev,
+      responsibilities: updatedResponsibilities
+    }));
+  };
+
+  const saveProfile = async () => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      
-      let logoUrl = null;
-      
-      // Handle logo upload if present
-      if (jobForm.companyLogo) {
-        const formData = new FormData();
-        formData.append('logo', jobForm.companyLogo);
-        
-        const uploadConfig = {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${userInfo.token}`
-          }
-        };
-        
-        const uploadResponse = await axios.post("/api/upload/logo", formData, uploadConfig);
-        logoUrl = uploadResponse.data.url;
-      }
-      
-      const config = {
+      const token = localStorage.getItem('token');
+      await axios.put('http://localhost:5000/api/users/update', profile, {
+        headers: { 
+          'x-auth-token': token,
+          'Content-Type': 'application/json'
+        }
+      });
+      setIsEditing(false);
+      // Show success message
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  };
+
+  const handleFileChange = (e, field) => {
+    setProfile(prev => ({
+      ...prev,
+      [field]: e.target.files[0]
+    }));
+  };
+
+  const uploadFile = async (file, field) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:5000/api/upload/' + field, formData, {
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      };
-      
-      // Include the employer's company automatically
-      const newJob = {
-        title: jobForm.title,
-        location: jobForm.location,
-        category: jobForm.category,
-        jobType: jobForm.jobType,
-        salary: jobForm.salary,
-        description: jobForm.description,
-        companyLogo: logoUrl
-      };
-      
-      const { data } = await axios.post("/api/jobs", newJob, config);
-      
-      // Update the posted jobs list
-      setPostedJobs((prev) => [data, ...prev]);
-      setJobForm({
-        title: "",
-        location: "",
-        category: "",
-        jobType: "",
-        salary: "",
-        description: "",
-        companyLogo: null
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
       });
       
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      // Update the profile with the new file URL
+      setProfile(prev => ({
+        ...prev,
+        [field]: response.data.url
+      }));
       
-      setIsEditingJob(false);
-    } catch (err) {
-      console.error("Error posting job:", err.response?.data.message || err.message);
+      // Show success message
+    } catch (error) {
+      console.error(`Error uploading ${field}:`, error);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userInfo");
-    navigate("/login");
-  };
-
-  if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;
-  if (!profile) return <div className="text-center mt-8">Loading...</div>;
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
-      <div className="max-w-5xl mx-auto p-4 py-8">
-        {/* Profile Header */}
-        {!isEditingProfile ? (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <div className="flex items-center mb-4 md:mb-0">
-                <div className="w-20 h-20 rounded-full bg-[#309689] flex items-center justify-center text-white text-2xl font-semibold">
-                  {profile.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="ml-4">
-                  <h1 className="text-2xl font-bold text-gray-800">{profile.name}</h1>
-                  <p className="text-gray-600">{profile.companyName || "No Company Name Provided"}</p>
-                </div>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header with Cover Photo */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+          <div className="h-48 bg-gradient-to-r from-blue-600 to-indigo-700 relative">
+            {isEditing && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                <label className="bg-white bg-opacity-90 text-blue-600 px-4 py-2 rounded-lg flex items-center cursor-pointer hover:bg-opacity-100 transition-all">
+                  <FiUpload className="mr-2" />
+                  Change Cover Photo
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      handleFileChange(e, 'coverPhoto');
+                      uploadFile(e.target.files[0], 'coverPhoto');
+                    }}
+                  />
+                </label>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => setIsEditingProfile(true)}
-                  className="bg-[#309689] hover:bg-[#267b6c] text-white px-4 py-2 rounded-md transition-colors"
-                >
-                  Edit Profile
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-            
-            {/* Company Details */}
-            {(profile.companyDescription || profile.website || profile.industry || profile.location) && (
-              <div className="mt-6 border-t border-gray-200 pt-4">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Company Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile.companyDescription && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">About</h3>
-                      <p className="text-gray-700">{profile.companyDescription}</p>
-                    </div>
+            )}
+            {profile.coverPhoto && (
+              <img 
+                src={typeof profile.coverPhoto === 'string' ? profile.coverPhoto : URL.createObjectURL(profile.coverPhoto)} 
+                alt="Cover" 
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+          
+          <div className="px-8 py-6 -mt-16 relative">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end">
+              <div className="flex items-end">
+                <div className="relative">
+                  <div className="h-32 w-32 rounded-full border-4 border-white bg-white shadow-md flex items-center justify-center overflow-hidden">
+                    {profile.logo ? (
+                      <img 
+                        src={typeof profile.logo === 'string' ? profile.logo : URL.createObjectURL(profile.logo)} 
+                        alt={profile.companyName || 'Company Logo'} 
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <FiBriefcase className="h-16 w-16 text-gray-400" />
+                    )}
+                  </div>
+                  {isEditing && (
+                    <label className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow-md cursor-pointer hover:bg-gray-100">
+                      <FiEdit2 className="text-blue-600" />
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          handleFileChange(e, 'logo');
+                          uploadFile(e.target.files[0], 'logo');
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+                
+                <div className="ml-6 mb-2">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="companyName"
+                      value={profile.companyName}
+                      onChange={handleInputChange}
+                      className="text-2xl font-bold text-gray-800 mb-1 border rounded px-3 py-1 w-full"
+                      placeholder="Company Name"
+                    />
+                  ) : (
+                    <h1 className="text-2xl font-bold text-gray-800">{profile.companyName || 'Company Name'}</h1>
                   )}
                   
-                  <div className="space-y-2">
-                    {profile.industry && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">Industry: </span>
-                        <span className="text-gray-700">{profile.industry}</span>
-                      </div>
-                    )}
-                    
-                    {profile.location && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">Location: </span>
-                        <span className="text-gray-700">{profile.location}</span>
-                      </div>
-                    )}
-                    
-                    {profile.website && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">Website: </span>
-                        <a 
-                          href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-[#309689] hover:underline"
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                    {isEditing ? (
+                      <div className="flex gap-2">
+                        <select
+                          name="industry"
+                          value={profile.industry}
+                          onChange={handleInputChange}
+                          className="border rounded px-2 py-1 text-sm flex-1"
                         >
-                          {profile.website}
-                        </a>
+                          <option value="">Select Industry</option>
+                          <option value="Technology">Technology</option>
+                          <option value="Finance">Finance</option>
+                          <option value="Healthcare">Healthcare</option>
+                          <option value="Education">Education</option>
+                          <option value="Retail">Retail</option>
+                          <option value="Manufacturing">Manufacturing</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <input
+                          type="text"
+                          name="location"
+                          value={profile.address?.city || ''}
+                          onChange={(e) => {
+                            setProfile(prev => ({
+                              ...prev,
+                              address: {
+                                ...prev.address,
+                                city: e.target.value
+                              }
+                            }));
+                          }}
+                          className="border rounded px-2 py-1 text-sm flex-1"
+                          placeholder="Location"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {profile.industry && <span>{profile.industry}</span>}
+                        {profile.industry && profile.address?.city && <span>•</span>}
+                        <span>{profile.address?.city || 'Location not specified'}</span>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
-            <form onSubmit={handleProfileUpdate} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={profileForm.name}
-                    onChange={handleProfileChange}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={profileForm.email}
-                    onChange={handleProfileChange}
-                    className="w-full p-2 border rounded-md bg-gray-100" 
-                    disabled
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Company Name</label>
-                  <input
-                    type="text"
-                    name="companyName"
-                    value={profileForm.companyName}
-                    onChange={handleProfileChange}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Industry</label>
-                  <input
-                    type="text"
-                    name="industry"
-                    value={profileForm.industry}
-                    onChange={handleProfileChange}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Website</label>
-                  <input
-                    type="text"
-                    name="website"
-                    value={profileForm.website}
-                    onChange={handleProfileChange}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Location</label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={profileForm.location}
-                    onChange={handleProfileChange}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-gray-700 mb-1">Company Description</label>
-                  <textarea
-                    name="companyDescription"
-                    value={profileForm.companyDescription}
-                    onChange={handleProfileChange}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                    rows="4"
-                  ></textarea>
-                </div>
-              </div>
               
-              <div className="flex justify-end space-x-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingProfile(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#309689] text-white rounded-md hover:bg-[#267b6c]"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Job Posting Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Your Job Postings</h2>
-            <button
-              onClick={() => setIsEditingJob(!isEditingJob)}
-              className="bg-[#309689] hover:bg-[#267b6c] text-white px-4 py-2 rounded-md transition-colors"
-            >
-              {isEditingJob ? "Cancel" : "Add Job"}
-            </button>
-          </div>
-          
-          {isEditingJob && (
-            <form onSubmit={handleJobSubmit} className="space-y-4 mb-8 border-b border-gray-200 pb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-700 mb-1">Job Title*</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={jobForm.title}
-                    onChange={handleJobChange}
-                    required
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Location*</label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={jobForm.location}
-                    onChange={handleJobChange}
-                    required
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                    placeholder="e.g., New Delhi, India"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Category*</label>
-                  <input
-                    type="text"
-                    name="category"
-                    value={jobForm.category}
-                    onChange={handleJobChange}
-                    required
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                    placeholder="e.g., IT, Marketing, Finance"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Job Type*</label>
-                  <select
-                    name="jobType"
-                    value={jobForm.jobType}
-                    onChange={handleJobChange}
-                    required
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
+              <div className="mt-4 sm:mt-0">
+                {isEditing ? (
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={saveProfile}
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center"
+                    >
+                      <FiSave className="mr-1" /> Save Changes
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center"
                   >
-                    <option value="">Select Job Type</option>
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Internship">Internship</option>
-                    <option value="Remote">Remote</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Salary</label>
-                  <input
-                    type="text"
-                    name="salary"
-                    value={jobForm.salary}
-                    onChange={handleJobChange}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                    placeholder="e.g., ₹5-8 LPA"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-1">Company Logo</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    ref={fileInputRef}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-gray-700 mb-1">Description*</label>
-                  <textarea
-                    name="description"
-                    value={jobForm.description}
-                    onChange={handleJobChange}
-                    required
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#309689] focus:border-transparent"
-                    rows="5"
-                  ></textarea>
-                </div>
+                    <FiEdit2 className="mr-1" /> Edit Profile
+                  </button>
+                )}
               </div>
-              
-              <div className="flex justify-end pt-2">
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* About */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">About Us</h2>
+              {isEditing ? (
+                <textarea
+                  name="about"
+                  value={profile.about}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-lg p-3 h-40"
+                  placeholder="Tell us about your company..."
+                />
+              ) : (
+                <p className="text-gray-600">
+                  {profile.about || 'No company description added yet.'}
+                </p>
+              )}
+            </div>
+
+            {/* Job Postings */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Job Postings</h2>
                 <button
-                  type="submit"
-                  className="bg-[#309689] hover:bg-[#267b6c] text-white px-6 py-2 rounded-md transition-colors"
+                  onClick={() => setShowJobForm(true)}
+                  className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm flex items-center hover:bg-blue-700 transition-colors"
                 >
-                  Post Job
+                  <FiPlus className="mr-1" /> Post a Job
                 </button>
               </div>
-            </form>
-          )}
 
-          {/* Display Jobs Posted by Employer */}
-          {postedJobs.length > 0 ? (
-            <div className="space-y-4">
-              {postedJobs.map((job) => (
-                <JobCard key={job._id} job={job} />
-              ))}
+              {showJobForm && (
+                <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                  <h3 className="font-medium mb-3">Post a New Job</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      name="title"
+                      value={newJob.title}
+                      onChange={handleJobChange}
+                      placeholder="Job Title"
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <select
+                        name="type"
+                        value={newJob.type}
+                        onChange={handleJobChange}
+                        className="border rounded px-3 py-2 text-sm"
+                      >
+                        {jobTypes.map((type, index) => (
+                          <option key={index} value={type}>{type}</option>
+                        ))}
+                      </select>
+                      
+                      <input
+                        type="text"
+                        name="location"
+                        value={newJob.location}
+                        onChange={handleJobChange}
+                        placeholder="Location"
+                        className="border rounded px-3 py-2 text-sm"
+                      />
+                    </div>
+                    
+                    <input
+                      type="text"
+                      name="salary"
+                      value={newJob.salary}
+                      onChange={handleJobChange}
+                      placeholder="Salary Range (e.g., $50,000 - $70,000)"
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Job Description</label>
+                      <textarea
+                        name="description"
+                        value={newJob.description}
+                        onChange={handleJobChange}
+                        className="w-full border rounded px-3 py-2 text-sm h-24"
+                        placeholder="Detailed job description..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Requirements</label>
+                      <div className="flex mb-2">
+                        <input
+                          type="text"
+                          value={newRequirement}
+                          onChange={(e) => setNewRequirement(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && addRequirement()}
+                          placeholder="Add a requirement"
+                          className="flex-1 border rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                        <button
+                          onClick={addRequirement}
+                          className="bg-blue-600 text-white px-3 rounded-r-lg hover:bg-blue-700 transition-colors text-sm"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {newJob.requirements.map((req, index) => (
+                          <div key={index} className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs flex items-center">
+                            {req}
+                            <button
+                              onClick={() => removeRequirement(index)}
+                              className="ml-1 text-blue-400 hover:text-blue-700"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Responsibilities</label>
+                      <div className="flex mb-2">
+                        <input
+                          type="text"
+                          value={newResponsibility}
+                          onChange={(e) => setNewResponsibility(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && addResponsibility()}
+                          placeholder="Add a responsibility"
+                          className="flex-1 border rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                        <button
+                          onClick={addResponsibility}
+                          className="bg-blue-600 text-white px-3 rounded-r-lg hover:bg-blue-700 transition-colors text-sm"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {newJob.responsibilities.map((resp, index) => (
+                          <div key={index} className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs flex items-center">
+                            {resp}
+                            <button
+                              onClick={() => removeResponsibility(index)}
+                              className="ml-1 text-green-400 hover:text-green-700"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2 mt-4">
+                      <button
+                        onClick={() => setShowJobForm(false)}
+                        className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={addJobPosting}
+                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                      >
+                        Post Job
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {profile.jobPostings && profile.jobPostings.length > 0 ? (
+                <div className="space-y-4">
+                  {profile.jobPostings.map((job, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-gray-800">{job.title}</h3>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
+                            <span>{job.type}</span>
+                            <span>•</span>
+                            <span>{job.location}</span>
+                            <span>•</span>
+                            <span>Posted on {new Date(job.postedDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className="mt-2">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              job.status === 'Active' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {job.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="text-blue-600 hover:text-blue-800">
+                            <FiEdit2 size={16} />
+                          </button>
+                          <button className="text-red-500 hover:text-red-700">
+                            <FiTrash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FiBriefcase className="mx-auto h-10 w-10 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No job postings yet</h3>
+                  <p className="mt-1 text-sm text-gray-500">Get started by posting your first job.</p>
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setShowJobForm(true)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <FiPlus className="-ml-1 mr-2 h-5 w-5" />
+                      Post a Job
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-center py-10 bg-gray-50 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-              <p className="text-gray-600 mt-3">You haven't posted any jobs yet.</p>
-              <button 
-                onClick={() => setIsEditingJob(true)}
-                className="mt-4 px-4 py-2 bg-[#309689] text-white rounded-md hover:bg-[#267b6c]"
-              >
-                Post Your First Job
-              </button>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Contact Information */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Contact Information</h2>
+              <div className="space-y-3">
+                <div className="flex items-center text-gray-600">
+                  <FiMail className="mr-3 text-blue-600" />
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      name="email"
+                      value={profile.email}
+                      onChange={handleInputChange}
+                      className="border rounded px-3 py-1 text-sm w-full"
+                      placeholder="contact@company.com"
+                    />
+                  ) : (
+                    <span>{profile.email || 'No email provided'}</span>
+                  )}
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <FiPhone className="mr-3 text-blue-600" />
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={profile.phone}
+                      onChange={handleInputChange}
+                      className="border rounded px-3 py-1 text-sm w-full"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  ) : (
+                    <span>{profile.phone || 'No phone number provided'}</span>
+                  )}
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <FiGlobe className="mr-3 text-blue-600" />
+                  {isEditing ? (
+                    <input
+                      type="url"
+                      name="website"
+                      value={profile.website}
+                      onChange={handleInputChange}
+                      className="border rounded px-3 py-1 text-sm w-full"
+                      placeholder="https://company.com"
+                    />
+                  ) : (
+                    <a 
+                      href={profile.website?.startsWith('http') ? profile.website : `https://${profile.website}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {profile.website || 'No website provided'}
+                    </a>
+                  )}
+                </div>
+                <div className="flex items-start text-gray-600">
+                  <FiMapPin className="mr-3 text-blue-600 mt-1" />
+                  {isEditing ? (
+                    <textarea
+                      name="location"
+                      value={profile.location}
+                      onChange={handleInputChange}
+                      className="border rounded px-3 py-1 text-sm w-full"
+                      placeholder="Company Address"
+                      rows="2"
+                    />
+                  ) : (
+                    <span className="whitespace-pre-line">{profile.location || 'No address provided'}</span>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
+
+            {/* Team Members */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Team Members</h2>
+                <button
+                  onClick={() => setShowTeamForm(true)}
+                  className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
+                >
+                  <FiPlus className="mr-1" /> Add Member
+                </button>
+              </div>
+
+              {showTeamForm && (
+                <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                  <h3 className="font-medium mb-3">Add Team Member</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      name="name"
+                      value={newTeamMember.name}
+                      onChange={handleTeamMemberChange}
+                      placeholder="Full Name"
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="text"
+                      name="position"
+                      value={newTeamMember.position}
+                      onChange={handleTeamMemberChange}
+                      placeholder="Position"
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="email"
+                      name="email"
+                      value={newTeamMember.email}
+                      onChange={handleTeamMemberChange}
+                      placeholder="Email"
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={newTeamMember.phone}
+                      onChange={handleTeamMemberChange}
+                      placeholder="Phone"
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                    <div className="flex justify-end space-x-2 mt-2">
+                      <button
+                        onClick={() => setShowTeamForm(false)}
+                        className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={addTeamMember}
+                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                      >
+                        Add Member
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {profile.teamMembers && profile.teamMembers.length > 0 ? (
+                <div className="space-y-3">
+                  {profile.teamMembers.map((member, index) => (
+                    <div key={index} className="flex items-center p-2 border border-gray-100 rounded-lg hover:bg-gray-50">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                        {member.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="ml-3 flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{member.position}</p>
+                      </div>
+                      <div className="flex space-x-1">
+                        <a 
+                          href={`mailto:${member.email}`} 
+                          className="text-gray-400 hover:text-blue-600"
+                          title="Email"
+                        >
+                          <FiMail size={16} />
+                        </a>
+                        <button className="text-gray-400 hover:text-red-600 ml-1">
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <FiUsers className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="mt-1 text-sm text-gray-500">No team members added yet</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
